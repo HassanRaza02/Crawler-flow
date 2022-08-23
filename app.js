@@ -5,6 +5,16 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
+const mongoose = require("mongoose");
+
+// Connect to the db
+mongoose.connect("mongodb://localhost:27017/flowCrawler", function (err, db) {
+   
+     if(err) throw err;
+
+    console.log("MongoDB Connected!")
+                
+});
 
 var app = express();
 
