@@ -4,6 +4,15 @@ fcl.config()
 
 var receiptAddressess = []
 var counter = 0
+
+/*
+NOTE: Todo
+
+1- Get All User Addresses and template IDs from events 
+2- Within Range
+3- Range of response data : 250
+
+*/
 const doStuff = async (sHeight, eHeight) => {
 
     var events = await fcl
