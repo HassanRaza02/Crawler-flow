@@ -22,13 +22,23 @@ const queryevents = (queryObject) => {
   });
 };
 
+const updateRecord = async (existingUserRecord, newTemplateId) => {
+  console.log("New Temp Id:", newTemplateId);
+  let updatedTemplateIds = existingUserRecord.templateIds;
+  updatedTemplateIds.push(newTemplateId);
+  const updated = await eventsModel.findOneAndUpdate({_id : existingUserRecord._id}, {templateIds: updatedTemplateIds }, {new: true});
+  if(updated) console.log("Existing record updated");
+}
+
 const addEventDetails = async (data) => {
   try {
-    
+   
     //Check if user already exists
     const existingUserRecord = await queryevents({userAddress: data.userAddress})
     if(existingUserRecord) {
-      console.log("Existing Record Found: ", existingUserRecord); //Update
+      console.log("Existing Record Found: "); //Update
+      await updateRecord(existingUserRecord, data.templateIds);
+
     }
     else{
       await eventsModel.create(data);
@@ -45,8 +55,13 @@ const removeAllRecords = async () => {
 
 }
 
+const getAllEvents = async () => {
+  return await eventsModel.findMany({});
+}
+
 
 module.exports = {
   addEventDetails,
-  removeAllRecords
+  removeAllRecords,
+  getAllEvents
 };

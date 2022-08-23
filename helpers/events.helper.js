@@ -12,20 +12,21 @@ connect();
 
 
 
-module.exports.getAllEvents = async() => {
+module.exports.updateEventRecords = async() => {
     let receiptAddressess = [];
     let undefinedEvents =0;
     let totalChecked = 0;
 
     let start = config.BLOCK_HEIGHTS.START_HEIGHT;
-    let end = config.BLOCK_HEIGHTS.START_HEIGHT + 1;
+    let end = config.BLOCK_HEIGHTS.START_HEIGHT + 200;
+
 
     try {
-    
-
     await eventsModel.removeAllRecords() //Deleting Old records
-    while(end!==config.BLOCK_HEIGHTS.END_HEIGHT)
+    while(end <= config.BLOCK_HEIGHTS.END_HEIGHT )
     {
+        console.log("ITERATION---->>>>>>  Start:", start, " End: ", end);
+ 
          
         const events = await fcl
         .send([
@@ -36,27 +37,35 @@ module.exports.getAllEvents = async() => {
             ),
         ])
         .then(fcl.decode);
-        console.log("Events: ", events);
+        console.log("Total Events",events?.length);
 
-        if (events[0]?.data?.receiptAddress ) {
-            receiptAddressess.push(events[0]?.data?.receiptAddress);
+        events.map (async (ev) => {
+            console.log(">> EVENT: ", ev)
+            receiptAddressess.push(ev?.data?.receiptAddress);
             eventsModel.addEventDetails({
-                userAddress:events[0]?.data?.receiptAddress,
-                templateIds:events[0]?.data?.templateId,
+                userAddress:    ev?.data?.receiptAddress,
+                templateIds:    ev?.data?.templateId,
             });
-        } else {
-            undefinedEvents++;
-        }
+        })
 
         //NOTE: Move to the next
-        start++;
-        end ++;
+        start   = end +1;
+        // if(start> config.BLOCK_HEIGHTS.END_HEIGHT) end=config.BLOCK_HEIGHTS.END_HEIGHT;
+        if(end === config.BLOCK_HEIGHTS.END_HEIGHT) break;
+        end = end + 200;
+        if(end> config.BLOCK_HEIGHTS.END_HEIGHT) end=config.BLOCK_HEIGHTS.END_HEIGHT;
+
         totalChecked++;
     }//end While
     } catch (error) {
-        console.log("Something went wrong | Retrying Again");
+        console.log("Something went wrong | Retrying Again | ERROR:", error);
     }
         console.log("ADDRESSES: ", receiptAddressess);
+        console.log("Last Checked: ", end);
         console.log("Total Checked Events: ", totalChecked);
         console.log("Undefined Events: ", undefinedEvents);
+}
+
+module.exports.getAllEvents = async () => {
+    return events = await eventsModel.getAllEvents();
 }
