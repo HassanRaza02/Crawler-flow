@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const eventsController = require('../controllers/events.controller');
-const app = express()
+const statsController = require('../controllers/stats.controller');
+
 
 
 /* Update Events */
@@ -10,6 +11,8 @@ const app = express()
 
 router.get('/', eventsController.getEvents);
 router.get('/getCsv', eventsController.getCsv);
+router.get('/getStats', statsController.getStats);
+
 // router.get('/update', eventsController.updateEvents);
 
 
