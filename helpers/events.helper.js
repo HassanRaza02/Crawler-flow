@@ -15,12 +15,17 @@ connect();
 module.exports.getAllEvents = async() => {
     let receiptAddressess = [];
     let undefinedEvents =0;
+    let totalChecked = 0;
 
     let start = config.BLOCK_HEIGHTS.START_HEIGHT;
     let end = config.BLOCK_HEIGHTS.START_HEIGHT + 1;
 
-    while(end!==config.BLOCK_HEIGHTS.END_HEIGHT)
     try {
+    
+
+    await eventsModel.removeAllRecords() //Deleting Old records
+    while(end!==config.BLOCK_HEIGHTS.END_HEIGHT)
+    {
          
         const events = await fcl
         .send([
@@ -35,7 +40,10 @@ module.exports.getAllEvents = async() => {
 
         if (events[0]?.data?.receiptAddress ) {
             receiptAddressess.push(events[0]?.data?.receiptAddress);
-            eventsModel.addEventDetails();
+            eventsModel.addEventDetails({
+                userAddress:events[0]?.data?.receiptAddress,
+                templateIds:events[0]?.data?.templateId,
+            });
         } else {
             undefinedEvents++;
         }
@@ -43,9 +51,12 @@ module.exports.getAllEvents = async() => {
         //NOTE: Move to the next
         start++;
         end ++;
+        totalChecked++;
+    }//end While
     } catch (error) {
         console.log("Something went wrong | Retrying Again");
     }
         console.log("ADDRESSES: ", receiptAddressess);
+        console.log("Total Checked Events: ", totalChecked);
         console.log("Undefined Events: ", undefinedEvents);
 }
