@@ -56,7 +56,7 @@ const removeAllRecords = async () => {
 }
 
 const getAllEvents = async () => {
-  return await eventsModel.findMany({});
+  return await eventsModel.find({});
 }
 
 

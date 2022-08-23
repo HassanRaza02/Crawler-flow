@@ -1,6 +1,9 @@
 const config = require('../config/config.json');
 const fcl = require("@onflow/fcl");
 const eventsModel = require('../models/events.model');
+const converter = require('json-2-csv');
+const fs = require('fs');
+const path = require('path');
 
 const connect = () =>{
 
@@ -68,4 +71,27 @@ module.exports.updateEventRecords = async() => {
 
 module.exports.getAllEvents = async () => {
     return events = await eventsModel.getAllEvents();
+}
+
+module.exports.generateCsv = (data) => {
+
+    try {
+
+        const fileName = "Events Record -" + Date.now();
+        const filePath = path.join('public', "/", fileName) + ".csv";
+
+        converter.json2csv(data, (err, csv) => {
+            if (err) {
+            throw err;
+            }
+            fs.writeFileSync(filePath, csv);
+        });
+        
+
+
+    } catch (error) {
+        console.log("Failed to generate CSV | ERROR: ", error)
+    }
+
+    
 }
