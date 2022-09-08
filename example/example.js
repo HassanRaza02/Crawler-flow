@@ -1,6 +1,6 @@
 const fcl = require("@onflow/fcl")
 fcl.config()
-    .put("accessNode.api", "https://flow-access-mainnet.portto.io")
+    .put("accessNode.api", "https://rest-mainnet.onflow.org")
 
 var receiptAddressess = []
 var counter = 0
@@ -74,7 +74,8 @@ const doWhileLoop = async () => {
     }
     while (j < 90);
 }
-doWhileLoop()
+// doWhileLoop()
+doStuff(35444752, 35444760)
 // var startHeight = 35444752;
 // var endHeight = 35534251;
 // for (var i = 1; i < 894; i++) {
