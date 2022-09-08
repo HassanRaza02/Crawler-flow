@@ -5,12 +5,15 @@ const statsController = require('../controllers/stats.controller');
 
 
 
-/* Update Events */
-// router.get('/update', eventsController.updateEvents );
+
 // router.get('/getAll', eventsController.getEvents );
 
-router.get('/', eventsController.getEvents);
+router.get('/', eventsController.getAllEvents);
+// Run Crawler | Update Events 
+router.get('/update', eventsController.updateEvents );
+//Get Data from DB and generate CSV
 router.get('/getCsv', eventsController.getCsv);
+//Get All the Stats and return
 router.get('/getStats', statsController.getStats);
 
 // router.get('/update', eventsController.updateEvents);
