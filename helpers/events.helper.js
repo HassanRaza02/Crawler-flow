@@ -6,9 +6,7 @@ const converter = require('json-2-csv');
 const fs = require('fs');
 const path = require('path');
 
-fcl.config()
-    .put("sdk.transport", transportGRPC)
-    .put("accessNode.api", "http://access-001.mainnet18.nodes.onflow.org:8000")
+
 
 
 const connect = async (ACCESS_NODE) =>{
@@ -17,22 +15,26 @@ const connect = async (ACCESS_NODE) =>{
         console.log("Connecting with Prev Spork")
        await fcl.config({
             "sdk.transport": transportGRPC,
-            "accessNode.api": "http://access-001.mainnet18.nodes.onflow.org:8000",
+            "accessNode.api": ACCESS_NODE,
         });
     }
       
-    else
-       await fcl.config()
+    else{
+        console.log("Connecting to Current Spork");
+
+        fcl.config()
+        .delete("sdk.transport");
+        fcl.config()
+        .delete("accessNode.api");
+        
+        fcl.config()
         .put("accessNode.api", ACCESS_NODE);
+
+    }
+       
     
     console.log("CONNECTED to FCL ACCESS NODE : ", ACCESS_NODE)
 }
-
-//Connecting Previous Stroke Access Node
-// connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
-
-
-
 
 
 module.exports.updateEventRecords = async() => {
@@ -46,6 +48,11 @@ module.exports.updateEventRecords = async() => {
 
     try {
     await eventsModel.removeAllRecords() //Deleting Old records
+
+    await connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
+
+
+
     while(end <= config.BLOCK_HEIGHTS.END_HEIGHT )
     {
         console.log("OLD SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
@@ -79,13 +86,12 @@ module.exports.updateEventRecords = async() => {
 
         totalChecked++;
     }//end While
-    return;
-    //Current Spork
+    //Switching connection to Current Spork
     start = config.BLOCK_HEIGHTS.START_HEIGHT_CURRENT_STROKE;
     end = start + 200;
 
     //Connecting Current Access Node
-    // await connect(config.ACCESS_NODE_API_ADDRESS_CURRENT); 
+    await connect(config.ACCESS_NODE_API_ADDRESS_CURRENT); 
 
     while(end <= config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE )
     {
