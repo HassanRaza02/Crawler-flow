@@ -17,7 +17,6 @@ const getAllEvents =async  (req,res,next) => {
 }
 
 const updateEvents = async (req, res, next) => {
-    console.log("Update Events Called");
     await eventsHelper.updateEventRecords();
     
     res.status(200).json({message: "Successfully Updated Records"});

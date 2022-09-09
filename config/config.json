@@ -1,9 +1,15 @@
 {
-"ACCESS_NODE_API_ADDRESS" : "https://rest-mainnet.onflow.org",
+"ACCESS_NODE_API_ADDRESS_CURRENT" : "https://rest-mainnet.onflow.org",
+"ACCESS_NODE_API_ADDRESS_PREV_STROKE" : "http://access-001.mainnet18.nodes.onflow.org:8000",
 "BLOCK_HEIGHTS" : 
-    {    
+    {  
+  
     "START_HEIGHT" : 35444752,
-    "END_HEIGHT" :36758997
+    "END_HEIGHT" : 35858810,
+
+    
+    "START_HEIGHT_CURRENT_STROKE" : 35858811,
+    "END_HEIGHT_CURRENT_STROKE" :36758997
 
     }
 }
