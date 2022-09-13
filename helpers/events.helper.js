@@ -47,20 +47,18 @@ module.exports.updateEventRecords = async() => {
 
 
     try {
-    await eventsModel.removeAllRecords() //Deleting Old records
-
+    // await eventsModel.removeAllRecords() //Deleting Old records
+   
     await connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
-
-
 
     while(end <= config.BLOCK_HEIGHTS.END_HEIGHT )
     {
         console.log("OLD SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
  
-         
         const events = await fcl
         .send([
             fcl.getEventsAtBlockHeightRange(
+                
                 "A.8f9231920da9af6d.AFLPack.PackBought",
                 start,
                 end,
@@ -72,7 +70,7 @@ module.exports.updateEventRecords = async() => {
         events.map (async (ev) => {
             console.log(">> EVENT: ", ev)
             receiptAddressess.push(ev?.data?.receiptAddress);
-            eventsModel.addEventDetails({
+            await eventsModel.addEventDetails({
                 userAddress:    ev?.data?.receiptAddress,
                 templateIds:    ev?.data?.templateId,
             });
@@ -112,7 +110,7 @@ module.exports.updateEventRecords = async() => {
         events.map (async (ev) => {
             console.log(">> EVENT: ", ev)
             receiptAddressess.push(ev?.data?.receiptAddress);
-            eventsModel.addEventDetails({
+            await eventsModel.addEventDetails({
                 userAddress:    ev?.data?.receiptAddress,
                 templateIds:    ev?.data?.templateId,
             });
