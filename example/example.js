@@ -1,6 +1,12 @@
-const fcl = require("@onflow/fcl")
-fcl.config()
-    .put("accessNode.api", "https://rest-mainnet.onflow.org")
+
+const fcl = require("@onflow/fcl");
+const transportGRPC = require("@onflow/transport-grpc").send;
+
+
+fcl.config({
+    "sdk.transport": transportGRPC,
+    "accessNode.api": "http://access-001.mainnet18.nodes.onflow.org:8000",
+});
 
 var receiptAddressess = []
 var counter = 0
