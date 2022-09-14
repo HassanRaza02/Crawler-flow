@@ -42,16 +42,29 @@ const countIssuedSupplyForAllTiers = async (data) => {
     })
 }
 
-const getStats = async (req, res, next) => {
+const getStats = async (req,res,next) => {
 
-    const data = await fcl.send(
-        [fcl.script(FCL_SCRIPT)]
-    ).then(fcl.decode);
-    // console.log("Stats: ", data);
-    await countIssuedSupplyForAllTiers(data);
-    console.log("Stats", issuedSupply);
+    console.log("Getting Stats");
+    try {
 
-    res.status(200).json({ issuedSupply });
+        const data = await fcl.send(
+            [fcl.script(FCL_SCRIPT)]
+        ).then(fcl.decode);
+        console.log("Stats: ", data);
+           await  countIssuedSupplyForAllTiers(data);
+           console.log("Stats", issuedSupply);
+    
+        res.status(200).json({issuedSupply});
+        
+    } catch (error) {
+        res.status(400).json({
+            error: true,
+            message: "Failed to get Stats",
+            desc: error
+        });
+    }
+  
+    
 
 }
 

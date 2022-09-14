@@ -1,24 +1,30 @@
 const eventsHelper = require('../helpers/events.helper');
 
-const getEvents = async (req, res, next) => {
-    console.log("Getting Events");
+const getEvents = async () => {
+    console.log("Getting Events ...");
     const events = await eventsHelper.getAllEvents();
+    console.log("Fetched Events Length:: ", events.length);
     if(events)
-    return events;
+      return events;
     else
-    return null
+      return null
   }
 
+const getAllEvents =async  (req,res,next) => {
+
+  const events = await getEvents();
+  events.length ? res.status(200).json({events}) : res.status(200).json({message: "No Events Found in DB"})
+}
+
 const updateEvents = async (req, res, next) => {
-    console.log("Update Events Called");
-    // await eventsHelper.updateEventRecords();
+    await eventsHelper.updateEventRecords();
     
     res.status(200).json({message: "Successfully Updated Records"});
     
   }
 
 const getCsv = async (req,res,next) => {
-  const events = await getEvents(req,res,next);
+  const events = await getEvents();
   console.log("Events",events);
   let dataForCsv = []
   events.map((ev)=>{
@@ -35,7 +41,7 @@ const getCsv = async (req,res,next) => {
 }
 
 module.exports = {
-  getEvents,
+  getAllEvents,
   updateEvents,
   getCsv
 }
