@@ -1,6 +1,11 @@
-const fcl = require("@onflow/fcl")
-fcl.config()
-    .put("accessNode.api", "https://flow-access-mainnet.portto.io")
+const fcl = require("@onflow/fcl");
+const transportGRPC = require("@onflow/transport-grpc").send;
+
+fcl.config({
+    "sdk.transport": transportGRPC,
+    "accessNode.api": "http://access-001.mainnet18.nodes.onflow.org:8000",
+});
+
 
 var receiptAddressess = []
 var counter = 0
@@ -74,7 +79,8 @@ const doWhileLoop = async () => {
     }
     while (j < 90);
 }
-doWhileLoop()
+// doWhileLoop()
+doStuff(35534251, 35534255)
 // var startHeight = 35444752;
 // var endHeight = 35534251;
 // for (var i = 1; i < 894; i++) {
