@@ -1,43 +1,42 @@
 const fcl = require("@onflow/fcl");
 const config = require('../config/config.json');
 
-const {FCL_SCRIPT} = require('../helpers/stats.helper');
+const { FCL_SCRIPT } = require('../helpers/stats.helper');
 fcl.config()
-    .put("accessNode.api", config.ACCESS_NODE_API_ADDRESS );
+    .put("accessNode.api", config.ACCESS_NODE_API_ADDRESS);
 
 let issuedSupply = {
-"Common":0,
-"Ovation":0,
-"Deluxe":0,
-"TotalRecords":0
+    "Common": 0,
+    "Ovation": 0,
+    "Deluxe": 0,
+    "TotalRecords": 0
 }
 
 const countIssuedSupplyForAllTiers = async (data) => {
     //reset values
     issuedSupply = {
-        "Common":0,
-        "Ovation":0,
-        "Deluxe":0,
-        "TotalRecords":0
-        }
+        "Common": 0,
+        "Ovation": 0,
+        "Deluxe": 0,
+        "TotalRecords": 0
+    }
 
     issuedSupply.TotalRecords = data.length;
-    await data.map((record)=>{
-     
-        
-              switch(record.tier)
-            {
-                case 'Common':
-                    issuedSupply.Common=issuedSupply.Common+Number(record.IssuedSupply);
-                    break;
-                case 'Ovation':
-                    issuedSupply.Ovation=issuedSupply.Ovation+Number(record.IssuedSupply);
-                    break;
-                case 'Deluxe':
-                    issuedSupply.Deluxe=issuedSupply.Deluxe+Number(record.IssuedSupply);
-                    break;
-                                      
-            }
+    await data.map((record) => {
+
+
+        switch (record.tier) {
+            case 'Common':
+                issuedSupply.Common = issuedSupply.Common + Number(record.IssuedSupply);
+                break;
+            case 'Ovation':
+                issuedSupply.Ovation = issuedSupply.Ovation + Number(record.IssuedSupply);
+                break;
+            case 'Deluxe':
+                issuedSupply.Deluxe = issuedSupply.Deluxe + Number(record.IssuedSupply);
+                break;
+
+        }
 
 
     })
@@ -69,4 +68,4 @@ const getStats = async (req,res,next) => {
 
 }
 
-module.exports = {getStats};
+module.exports = { getStats };
