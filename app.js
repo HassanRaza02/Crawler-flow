@@ -27,6 +27,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/events', indexRouter);
+app.use('/templates', indexRouter);
+
 
 // catch 404
 app.use('/',function(req, res, next) {
