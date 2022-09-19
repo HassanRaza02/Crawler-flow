@@ -1,10 +1,13 @@
 const config = require('../config/config.json');
 const fcl = require("@onflow/fcl");
+const type = require("@onflow/types")
 const transportGRPC = require("@onflow/transport-grpc").send;
 const genesisBallRecordsModel = require('../models/genesisBallRecords.model');
-// const converter = require('json-2-csv');
-// const fs = require('fs');
-// const path = require('path');
+const userModel = require('../models/User.model');
+
+const converter = require('json-2-csv');
+const fs = require('fs');
+const path = require('path');
 
 const connect = async (ACCESS_NODE) => {
 
@@ -33,25 +36,27 @@ const connect = async (ACCESS_NODE) => {
     console.log("CONNECTED to FCL ACCESS NODE : ", ACCESS_NODE)
 }
 
-const getRecipientAddress = async(txId) => {
+
+const getTemplateId = async (nftId) => {
     try {
-        const tx = await fcl
-        .send([
-            fcl.getTransaction(
-                txId
+        const script = await fcl.send([
+            fcl.script(
+                `
+                import AFLNFT from 0x8f9231920da9af6d
+                pub fun main(nftId: UInt64): UInt64{
+                    let nftData = AFLNFT.getNFTData(nftId:nftId)
+                    return  nftData.templateId
+                }`
             ),
-        ])
-        .then(fcl.decode);
-    let address;
-    tx?.args.map((arg) => {
-        if (arg.type === "Address") {
-            address = tx?.args[0].value;
-            return;
-        }
-    })
-    return address; 
+            fcl.args([
+                fcl.arg(String(nftId), type.UInt64)
+            ])
+        ]).then(fcl.decode)
+        return script;
+
     } catch (error) {
-        console.log("ERROR: Failed to get Trx Details, Details: ", error);
+        console.log("ERROR getting template ID | ", error);
+        return null;
     }
 }
 
@@ -65,49 +70,52 @@ module.exports.updateGenesisBallsRecords = async () => {
 
 
     try {
-        await genesisBallRecordsModel.removeAllRecords() //Deleting Old records
+        // await genesisBallRecordsModel.removeAllRecords() //Deleting Old records
 
-        await connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
+        // await connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
 
-        while (end <= config.BLOCK_HEIGHTS.END_HEIGHT) {
-            console.log("OLD SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
+        // while (end <= config.BLOCK_HEIGHTS.END_HEIGHT) {
+        //     console.log("OLD SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
 
-            const events = await fcl
-                .send([
-                    fcl.getEventsAtBlockHeightRange(
+        //     const events = await fcl
+        //         .send([
+        //             fcl.getEventsAtBlockHeightRange(
 
-                        "A.8f9231920da9af6d.AFLNFT.NFTMinted",
-                        start,
-                        end,
-                    ),
-                ])
-                .then(fcl.decode);
+        //                 config.DEPOSIT_EVENT,
+        //                 start,
+        //                 end,
+        //             ),
+        //         ])
+        //         .then(fcl.decode);
 
-                console.log("Total Events", events?.length);
+        //     console.log("Total Events", events?.length);
 
 
-                for (let index = 0; index < events.length; index++) {
-                    if (events[index]?.data?.templateId === config.GENESISBALL_TEMPLATE_ID) {
-                        console.log("templateId: ", events[index]?.data.templateId, "transactionId", events[index]?.transactionId);
-                        let address = await getRecipientAddress(events[index]?.transactionId);
-                        console.log("Address: ", address);
+        //     for (let index = 0; index < events.length; index++) {
 
-                        await genesisBallRecordsModel.addRecord({
-                            userAddress: address,
-                            trxId: events[index].transactionId,
-                        });
-                    }
-                    
-                }
+        //         const nftId = events[index]?.data?.id;
+        //         const templateId = await getTemplateId(nftId);
+        //         const address = events[index]?.data.to;
 
-            //NOTE: Move to the next
-            start = end + 1;
-            if (end === config.BLOCK_HEIGHTS.END_HEIGHT) break;
-            end = end + 200;
-            if (end > config.BLOCK_HEIGHTS.END_HEIGHT) end = config.BLOCK_HEIGHTS.END_HEIGHT;
+        //         if (templateId === config.GENESISBALL_TEMPLATE_ID) {
+        //             console.log("nftId: ", nftId, " user:", address);
 
-            totalChecked++;
-        }//end While
+        //             await genesisBallRecordsModel.addRecord({
+        //                 userAddress: address,
+        //                 nftId,
+        //             });
+        //         }
+
+        //     }
+
+        //     //NOTE: Move to the next
+        //     start = end + 1;
+        //     if (end === config.BLOCK_HEIGHTS.END_HEIGHT) break;
+        //     end = end + 200;
+        //     if (end > config.BLOCK_HEIGHTS.END_HEIGHT) end = config.BLOCK_HEIGHTS.END_HEIGHT;
+
+        //     totalChecked++;
+        // }//end While
         //Switching connection to Current Spork
         start = config.BLOCK_HEIGHTS.START_HEIGHT_CURRENT_STROKE;
         end = start + 200;
@@ -122,7 +130,7 @@ module.exports.updateGenesisBallsRecords = async () => {
             const events = await fcl
                 .send([
                     fcl.getEventsAtBlockHeightRange(
-                        "A.8f9231920da9af6d.AFLPack.PackBought",
+                        config.DEPOSIT_EVENT,
                         start,
                         end,
                     ),
@@ -131,17 +139,20 @@ module.exports.updateGenesisBallsRecords = async () => {
             console.log("Total Events", events?.length);
 
             for (let index = 0; index < events.length; index++) {
-                if (events[index]?.data?.templateId === config.GENESISBALL_TEMPLATE_ID) {
-                    console.log("templateId: ", events[index]?.data.templateId, "transactionId", events[index]?.transactionId);
-                    let address = await getRecipientAddress(events[index]?.transactionId);
-                    console.log("Address: ", address);
+
+                const nftId = events[index]?.data?.id;
+                const templateId = await getTemplateId(nftId);
+                const address = events[index]?.data.to;
+
+                if (templateId === config.GENESISBALL_TEMPLATE_ID) {
+                    console.log("nftId: ", nftId, " user:", address);
 
                     await genesisBallRecordsModel.addRecord({
                         userAddress: address,
-                        trxId: events[index].transactionId,
+                        nftId,
                     });
                 }
-                
+
             }
 
             //NOTE: Move to the next
@@ -158,3 +169,37 @@ module.exports.updateGenesisBallsRecords = async () => {
     }
 }
 
+module.exports.getAllGenesisBalls = async () => {
+    return events = await genesisBallRecordsModel.getAllRecords()
+}
+
+module.exports.generateCsv = (data) => {
+    try {
+        const fileName = "Genesis Balls Record -" + Date.now();
+        const filePath = path.join('public', "/", fileName) + ".csv";
+
+        converter.json2csv(data, (err, csv) => {
+            if (err) {
+                throw err;
+            }
+            fs.writeFileSync(filePath, csv);
+        });
+
+    } catch (error) {
+        console.log("Failed to generate CSV | ERROR: ", error)
+    }
+}
+
+module.exports.getAllUniqueRecord = async () => {
+    const users = await genesisBallRecordsModel.getDistinctRecords();
+    users.map(async (user) => {
+        console.log("User ", user);
+        const genesisCount = await genesisBallRecordsModel.countGenesisBalls(user);
+        await userModel.add({
+            address: user,
+            genesisCount
+        });
+    });
+
+
+}

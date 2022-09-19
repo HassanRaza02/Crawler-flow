@@ -7,6 +7,7 @@ const templatesController = require('../controllers/templates.controller');
 
 
 
+
 // router.get('/getAll', eventsController.getEvents );
 
 router.get('/', eventsController.getAllEvents);
@@ -34,10 +35,8 @@ router.get('/GenesisRecords/get', templatesController.getAllGenesisRecords );
 //3 Generate CSV of Users and Genesis Balls Count
 router.get('/GenesisRecords/generateCsv', templatesController.generateGenesisRecordCsv );
 
-
-
-
-
+//4 
+router.get('/GenesisRecords/users', templatesController.getUniqueUsers );
 
 module.exports = router;
 
