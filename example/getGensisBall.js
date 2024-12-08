@@ -5,7 +5,7 @@ const config = require("../config/config.json")
 const { GENESIS_BALL } = require("../helpers/genesisBall.helper");
 const connect = () => {
     fcl.config()
-        .put("accessNode.api", config.ACCESS_NODE_API_ADDRESS)
+        .put("accessNode.api", config.ACCESS_NODE_API_ADDRESS_CURRENT)
     console.log("FCl connected .........");
 
 }
@@ -1210,7 +1210,11 @@ const checkGensisBallCount = (data) => {
     if (data.length < 1) return 0;
     else {
         data.map((tempId) => {
-            if (tempId === requiredTemplateId) tempsCount++;
+
+            if (tempId === requiredTemplateId) {
+                // tempsCount++
+                console.log(tempId);
+            };
         });
         return tempsCount;
     }
@@ -1219,27 +1223,28 @@ const checkGensisBallCount = (data) => {
 }
 
 const getGensisBallData = async (addr) => {
-    console.log(addr.length);
-    let totalGenesisBallCount = 0;
-    for (var i = 0; i < addr.length; i++) {
-        // console.log(addr[i]);
+    // console.log(addr.length);
+    // let totalGenesisBallCount = 0;
+    // for (var i = 0; i < addr.length; i++) {
+    // console.log(addr[i]);
 
-        const data = await fcl.send([
-            fcl.script(GENESIS_BALL),
-            fcl.args([
-                fcl.arg(addr[i], t.Address)
-            ])
-        ]).then(fcl.decode)
-        const count = await checkGensisBallCount(data);
-        totalGenesisBallCount += count;
+    const data = await fcl.send([
+        fcl.script(GENESIS_BALL),
+        fcl.args([
+            fcl.arg(addr, t.Address)
+        ])
+    ]).then(fcl.decode)
+    const count = await checkGensisBallCount(data);
+    console.log(count);
+    // totalGenesisBallCount += count;
 
-        if (count) genesisBallRecord.data.push({ user: addr[i], genesisBalls: count });
+    // if (count) genesisBallRecord.data.push({ user: addr[i], genesisBalls: count });
 
-        // console.log("User: ", addr[i], "  Count: ", count);
+    // console.log("User: ", addr[i], "  Count: ", count);
 
-    }
-    genesisBallRecord.totalGenesisBallCount = totalGenesisBallCount;
-
-    console.log("Genesis Ball Record: ", genesisBallRecord);
 }
-getGensisBallData(uniqueUserAddresses)
+// genesisBallRecord.totalGenesisBallCount = totalGenesisBallCount;
+// 
+// console.log("Genesis Ball Record: ", genesisBallRecord);
+// }
+getGensisBallData("0x514867d82235f171")

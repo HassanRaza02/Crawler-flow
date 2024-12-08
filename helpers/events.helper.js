@@ -9,37 +9,37 @@ const path = require('path');
 
 
 
-const connect = async (ACCESS_NODE) =>{
+const connect = async (ACCESS_NODE) => {
 
-    if(ACCESS_NODE === config.ACCESS_NODE_API_ADDRESS_PREV_STROKE){
+    if (ACCESS_NODE === config.ACCESS_NODE_API_ADDRESS_PREV_STROKE) {
         console.log("Connecting with Prev Spork")
-       await fcl.config({
+        await fcl.config({
             "sdk.transport": transportGRPC,
             "accessNode.api": ACCESS_NODE,
         });
     }
-      
-    else{
+
+    else {
         console.log("Connecting to Current Spork");
 
         fcl.config()
-        .delete("sdk.transport");
+            .delete("sdk.transport");
         fcl.config()
-        .delete("accessNode.api");
-        
+            .delete("accessNode.api");
+
         fcl.config()
-        .put("accessNode.api", ACCESS_NODE);
+            .put("accessNode.api", ACCESS_NODE);
 
     }
-       
-    
+
+
     console.log("CONNECTED to FCL ACCESS NODE : ", ACCESS_NODE)
 }
 
 
-module.exports.updateEventRecords = async() => {
+module.exports.updateEventRecords = async () => {
     let receiptAddressess = [];
-    let undefinedEvents =0;
+    let undefinedEvents = 0;
     let totalChecked = 0;
 
     let start = config.BLOCK_HEIGHTS.START_HEIGHT;
@@ -47,93 +47,91 @@ module.exports.updateEventRecords = async() => {
 
 
     try {
-    // await eventsModel.removeAllRecords() //Deleting Old records
-   
-    await connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
+        // await eventsModel.removeAllRecords() //Deleting Old records
 
-    while(end <= config.BLOCK_HEIGHTS.END_HEIGHT )
-    {
-        console.log("OLD SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
- 
-        const events = await fcl
-        .send([
-            fcl.getEventsAtBlockHeightRange(
-                
-                "A.8f9231920da9af6d.AFLPack.PackBought",
-                start,
-                end,
-            ),
-        ])
-        .then(fcl.decode);
-        console.log("Total Events",events?.length);
+        await connect(config.ACCESS_NODE_API_ADDRESS_PREV_STROKE);
 
-        events.map (async (ev) => {
-            console.log(">> EVENT: ", ev)
-            receiptAddressess.push(ev?.data?.receiptAddress);
-            await eventsModel.addEventDetails({
-                userAddress:    ev?.data?.receiptAddress,
-                templateIds:    ev?.data?.templateId,
-            });
-        })
+        while (end <= config.BLOCK_HEIGHTS.END_HEIGHT) {
+            console.log("OLD SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
 
-        //NOTE: Move to the next
-        start   = end +1;
-        if(end === config.BLOCK_HEIGHTS.END_HEIGHT) break;
-        end = end + 200;
-        if(end> config.BLOCK_HEIGHTS.END_HEIGHT) end=config.BLOCK_HEIGHTS.END_HEIGHT;
+            const events = await fcl
+                .send([
+                    fcl.getEventsAtBlockHeightRange(
 
-        totalChecked++;
-    }//end While
-    //Switching connection to Current Spork
-    start = config.BLOCK_HEIGHTS.START_HEIGHT_CURRENT_STROKE;
-    end = start + 200;
+                        "A.8f9231920da9af6d.AFLPack.PackBought",
+                        start,
+                        end,
+                    ),
+                ])
+                .then(fcl.decode);
+            console.log("Total Events", events?.length);
 
-    //Connecting Current Access Node
-    await connect(config.ACCESS_NODE_API_ADDRESS_CURRENT); 
+            events.map(async (ev) => {
+                console.log(">> EVENT: ", ev)
+                receiptAddressess.push(ev?.data?.receiptAddress);
+                await eventsModel.addEventDetails({
+                    userAddress: ev?.data?.receiptAddress,
+                    templateIds: ev?.data?.templateId,
+                });
+            })
 
-    while(end <= config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE )
-    {
-        console.log("CURRENT SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
- 
-         
-        const events = await fcl
-        .send([
-            fcl.getEventsAtBlockHeightRange(
-                "A.8f9231920da9af6d.AFLPack.PackBought",
-                start,
-                end,
-            ),
-        ])
-        .then(fcl.decode);
-        console.log("Total Events",events?.length);
+            //NOTE: Move to the next
+            start = end + 1;
+            if (end === config.BLOCK_HEIGHTS.END_HEIGHT) break;
+            end = end + 200;
+            if (end > config.BLOCK_HEIGHTS.END_HEIGHT) end = config.BLOCK_HEIGHTS.END_HEIGHT;
 
-        events.map (async (ev) => {
-            console.log(">> EVENT: ", ev)
-            receiptAddressess.push(ev?.data?.receiptAddress);
-            await eventsModel.addEventDetails({
-                userAddress:    ev?.data?.receiptAddress,
-                templateIds:    ev?.data?.templateId,
-            });
-        })
+            totalChecked++;
+        }//end While
+        //Switching connection to Current Spork
+        start = config.BLOCK_HEIGHTS.START_HEIGHT_CURRENT_STROKE;
+        end = start + 200;
 
-        //NOTE: Move to the next
-        start   = end +1;
-        if(end === config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE) break;
-        end = end + 200;
-        if(end> config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE) end=config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE;
+        //Connecting Current Access Node
+        await connect(config.ACCESS_NODE_API_ADDRESS_CURRENT);
 
-        totalChecked++;
-    }//end While
+        while (end <= config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE) {
+            console.log("CURRENT SPORK | ITERATION---->>>>>>  Start:", start, " End: ", end);
+
+
+            const events = await fcl
+                .send([
+                    fcl.getEventsAtBlockHeightRange(
+                        "A.8f9231920da9af6d.AFLPack.PackBought",
+                        start,
+                        end,
+                    ),
+                ])
+                .then(fcl.decode);
+            console.log("Total Events", events?.length);
+
+            events.map(async (ev) => {
+                console.log(">> EVENT: ", ev)
+                receiptAddressess.push(ev?.data?.receiptAddress);
+                await eventsModel.addEventDetails({
+                    userAddress: ev?.data?.receiptAddress,
+                    templateIds: ev?.data?.templateId,
+                });
+            })
+
+            //NOTE: Move to the next
+            start = end + 1;
+            if (end === config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE) break;
+            end = end + 200;
+            if (end > config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE) end = config.BLOCK_HEIGHTS.END_HEIGHT_CURRENT_STROKE;
+
+            totalChecked++;
+        }//end While
 
 
 
     } catch (error) {
         console.log("Something went wrong | Retrying Again | ERROR:", error);
     }
-        console.log("ADDRESSES: ", receiptAddressess);
-        console.log("Last Checked: ", end);
-        console.log("Total Checked Events: ", totalChecked);
-        console.log("Undefined Events: ", undefinedEvents);
+    console.log("ADDRESSES: ", receiptAddressess);
+    console.log("Last Checked: ", end);
+    console.log("Total Checked Events: ", totalChecked);
+    console.log("Undefined Events: ", undefinedEvents);
 }
 
 module.exports.getAllEvents = async () => {
@@ -149,16 +147,16 @@ module.exports.generateCsv = (data) => {
 
         converter.json2csv(data, (err, csv) => {
             if (err) {
-            throw err;
+                throw err;
             }
             fs.writeFileSync(filePath, csv);
         });
-        
+
 
 
     } catch (error) {
         console.log("Failed to generate CSV | ERROR: ", error)
     }
 
-    
+
 }
